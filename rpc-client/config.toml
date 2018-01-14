@@ -1,0 +1,25 @@
+[parity]
+chain = "d:\\parity\\private\\chain-spec.json"
+base_path = "d:\\parity\\private"
+db_path = "d:\\parity\\private\\chains"
+keys_path = "d:\\parity\\private\\keys"
+identity = "private"
+
+[network]
+port = 31337
+no_warp = true
+id = 12345
+bootnodes = ["enode://c0ad2f6260c4248c95e8377e34166777be74241757ccb2d0d1e8d1daae20ce1586b46b7225f6279ed76453224f56aff237fa9a8168104d948ca6e600652e1cea@192.168.10.232:30303"]
+
+[rpc]
+port = 8545
+apis = ["web3", "eth", "net", "parity", "traces", "rpc", "secretstore", "personal"]
+
+[footprint]
+pruning = "archive"
+tracing = "on"
+db_compaction = "hdd"
+
+[misc]
+log_file = "d:\\parity\\private\\parity.log"
+color = false

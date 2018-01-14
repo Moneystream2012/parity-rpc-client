@@ -1,0 +1,11 @@
+[parity]
+chain = "kovan"
+
+[secretstore]
+disable = false
+self_secret = "fecc29489943b52ff71f2df55318972137b8726938a14ea03d872d009dc9261b"
+interface = "local"
+port = 8083
+http_interface = "local"
+http_port = 8082
+path = "db.kovan_ss1/secretstore"
