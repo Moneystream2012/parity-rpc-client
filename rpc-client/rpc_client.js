@@ -2,6 +2,7 @@
 const ACCOUNT_ADDRESS = '0x007567606d3ae13ee2c9c70b527d32c3ca680e9d'
 const ACCOUNT_PASSWORD = 'kristina19092009'
 const KEY_DIRECTORY = '/parity-keys'
+const FILES_DIRECTORY = '/encrypted'
 const NODE_T = 0
 
 const os = require('os')
@@ -13,10 +14,6 @@ const unirest = require('unirest')
 const ethKey = require('keythereum')
 const ethUtil = require('ethereumjs-util')
 const secp256k1 = require('secp256k1')
-
-function isFunction (f) {
-  return typeof f === 'function'
-}
 
 function getPrivateKey (address, pwd, keydir) {
   let keyObj = ethKey.importFromFile(address, os.homedir() + keydir)
@@ -63,7 +60,7 @@ function doRequest (port, endpoint, method, data, success) {
   req.end()
 }
 
-function run (cb, doc, T) {
+function doEncode (filename, documentBody, T) {
   doRequest(8545, '/', 'POST', {
     'method': 'personal_unlockAccount',
     'params': [ACCOUNT_ADDRESS, ACCOUNT_PASSWORD, null],
@@ -85,15 +82,23 @@ function run (cb, doc, T) {
         findRemoveSync(keydir, {files: '*.*'})
         ethKey.exportToFile(data.result, keydir)
 
-        if (isFunction(cb)) {
-          cb(doc, T)
-        }
+        encode(filename, documentBody, T)
       })
     }
   })
 }
 
-function encode (documentBody, T) {
+function proceedEncrypted (filename, data, hash) {
+  console.log('\nStatus code: ', data.status, '\nbody: ', data.body)
+
+  let pathname = os.homedir() + KEY_DIRECTORY + FILES_DIRECTORY + '/' + filename
+  fs.writeFileSync(pathname + '.key', hash)
+  fs.writeFileSync(pathname + '.enc', data.body.result)
+}
+// let Buffer.from(data.body.result, 'hex')
+// console.log(parseInt())
+
+function encode (filename, documentBody, T) {
   let privateKey = getPrivateKey(ACCOUNT_ADDRESS, ACCOUNT_PASSWORD, KEY_DIRECTORY)
   let address = ethKey.privateKeyToAddress(privateKey)
   console.log(`\nsecret is ${privateKey.toString('hex')},\naddress is ${address}`)
@@ -111,8 +116,24 @@ function encode (documentBody, T) {
     let Request = unirest.post('http://127.0.0.1:8545/')
     Request.headers({'Content-Type': 'application/json'})
     Request.send(dataBinary)
-    Request.end(res => console.log('\nStatus code: ', res.status, '\nbody: ', res.body))
+    Request.end(data => proceedEncrypted(filename, data, hash))
   })
+}
+
+function decode (filename, T) {
+  let privateKey = getPrivateKey(ACCOUNT_ADDRESS, ACCOUNT_PASSWORD, KEY_DIRECTORY)
+  let pathname = os.homedir() + KEY_DIRECTORY + FILES_DIRECTORY + '/' + filename
+  let hash = fs.readFileSync(pathname + '.key').toString('ascii')
+  let signedHash = secp256k1.sign(Buffer.from(hash, 'hex'), privateKey)
+
+  console.log('\nhash is ', hash, ' signed is ', signedHash.signature.toString('hex'))
+
+  doRequest(8082, '/' + hash + '/' + signedHash.signature.toString('hex') + '00/', 'POST', {
+  }, function (documentKey) {
+    console.log('\nShadow document key is ', documentKey)
+  })
+
+  // let hash = ethUtil.sha3(documentBody + new Date().toISOString()).toString('hex')
 }
 
 let filename = process.argv[2]
@@ -121,4 +142,9 @@ if (filename === 'undefined') throw new Error('no filename specified!')
 let documentBody = fs.readFileSync(os.homedir() + KEY_DIRECTORY + '/' + filename).toString('hex')
 if (documentBody == null || documentBody === '') throw new Error('no file specified!')
 
-run(encode, documentBody, NODE_T)
+let mode = process.argv[3]
+if (mode === 'decode') {
+  decode(filename, NODE_T)
+} else {
+  doEncode(filename, documentBody, NODE_T)
+}

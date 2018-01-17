@@ -7,8 +7,11 @@ curl --data '{"method":"parity_accountsInfo","params":[],"id":1,"jsonrpc":"2.0"}
 curl --data '{"method":"parity_signMessage","params":["0x007567606d3AE13ee2C9C70B527D32c3CA680e9d","kristina19092009","0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad"],"id":1,"jsonrpc":"2.0"}' -H "Content-Type: application/json" -X POST localhost:8545
 
 
-// RUN parity with allowed access to [personal,parity_set] module
+// RUN parity with allowed access to default + [personal,parity_set,parity_accounts] module
 sudo RUST_LOG=secretstore=trace,secretstore_net=trace ./parity --config config.toml --jsonrpc-apis web3,eth,pubsub,net,parity,parity_pubsub,parity_set,parity_accounts,traces,rpc,secretstore,personal
+
+
+
 
 // ID# description
 //  1) get accounts_list from node,
@@ -130,6 +133,10 @@ curl --data '{"method":"personal_unlockAccount","params":["0x007567606d3ae13ee2c
 
 curl --data '{"method":"parity_exportAccount","params":["0x007567606d3ae13ee2c9c70b527d32c3ca680e9d","kristina19092009"],"id":1,"jsonrpc":"2.0"}' -H "Content-Type: application/json" -X POST localhost:8545
 {"jsonrpc":"2.0","result":{"address":"007567606d3ae13ee2c9c70b527d32c3ca680e9d","crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"7d71a8d78c94adcb790a44bc148a3a38"},"ciphertext":"f1b005ecd56f0db5c5691cbf8fbc624a71a91d9877e3a80cfdb18f0177ffd18a","kdf":"pbkdf2","kdfparams":{"c":10240,"dklen":32,"prf":"hmac-sha256","salt":"6376c10d2802b4cd3ba231b75dadf317c084e7e691468dc8d5df4d2611bd643f"},"mac":"7febc04c0e8edb6bc4e1363081af71ba29c1e4b842afea5401e2878b7763e647"},"id":"28643d13-4360-59fa-c6b8-f5b7a8935d1c","meta":"{\"description\":\"\",\"passwordHint\":\"as usual\",\"timestamp\":1515796466445}","name":"moneystream","version":3},"id":1}
+
+
+
+curl http://localhost:8082/1785a1b68217dc92f16b3186af64825308b89225fb68eef65c9966131c9e6d24/f67a09c614e090f575931f67f141a2ed6e3ffa73f32129ff69beba20b42c7210111970b728cbfcf38fe0d8d0471c7d1641a36afbc5ee5d6942c2627c90ecf5dc
 
 
 
